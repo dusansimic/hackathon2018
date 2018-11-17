@@ -70,10 +70,10 @@ def ChargingHandler(msg):
         else:
             power_reference = 0.0
 
-    # if msg.bessSOC >= 0.99:
-    #     pv_mode = PVMode.OFF
-    # elif msg.bessSOC <= 0.95:
-    #     pv_mode = PVMode.ON
+    # Ako udjemo u gap gde je struja jeftina a nema svetla
+    if msg.solar_production == 0 and msg.buying_price == 3:
+        if msg.bessSOC < 0.75:
+            power_reference = -5.0
 
     # Ako radi grid i napunjenost baterije je manje od 99%
     if msg.solar_production != 0 and msg.solar_production > msg.current_load:
@@ -109,8 +109,6 @@ def BlackoutHandler(msg, power_reference):
             power_reference = 5.0
             # Gasenje uredjaja radi sprecavanja preopterecenja
             (load_one, load_two, load_three) = LoadHandler(msg)
-        if power_reference < -5.0:
-            power_reference = -5.0
 
     return (load_one, load_two, load_three, power_reference)
 
