@@ -65,15 +65,25 @@ def ChargingHandler(msg):
 
     # Ako udjemo u gap gde je struja skupa a nema svetla
     if msg.solar_production == 0 and msg.buying_price == 8:
-        power_reference = 5.0
-    # Ako radi grid i napunjenost baterije je manje od 95%
-    if msg.grid_status and msg.bessSOC < 0.95 and msg.buying_price == 3:
-        power_reference = -5.0
-    if not msg.grid_status:
-        if msg.bessSOC >= 0.95:
-            pv_mode = PVMode.OFF
+        if msg.bessSOC > 0.25:
+            power_reference = 5.0
         else:
-            pv_mode = PVMode.ON
+            power_reference = 0.0
+    # Ako radi grid i napunjenost baterije je manje od 95%
+    if msg.solar_production != 0 and msg.solar_production > msg.current_load and msg.bessSOC < 0.99:
+        power_reference = -(msg.solar_production - msg.current_load)
+        if msg.grid_status:
+            if power_reference < -5.0:
+                power_reference = -5.0
+        else:
+            if msg.bessSOC >= 0.99:
+                pv_mode = PVMode.OFF
+            elif msg.bessSOC <= 0.95:
+                pv_mode = PVMode.ON
+
+            if power_reference < -5.0:
+                power_reference = 5.0
+                pv_mode = PVMode.OFF
 
     return (power_reference, pv_mode)
 
@@ -92,10 +102,12 @@ def BlackoutHandler(msg, power_reference):
         # Povlacenje baterije je jednako opterecenju kuce bez panela
         power_reference = msg.current_load - msg.solar_production
         # Ako je opterecenje baterije vece od maksimalnog opterecenja
-        if(power_reference > 5.0):
+        if power_reference > 5.0:
             power_reference = 5.0
             # Gasenje uredjaja radi sprecavanja preopterecenja
             (load_one, load_two, load_three) = LoadHandler(msg)
+        if power_reference < -5.0:
+            power_reference = -5.0
 
     return (load_one, load_two, load_three, power_reference)
 
@@ -104,7 +116,7 @@ def LoadHandler(msg):
     # Ako je opterecenje kuce vece od baterije i panela zajedno
     if msg.current_load > msg.solar_production + 5.0:
         # Ako je opterecenje kuce bez 3. uredjaja vece od baterije i panela zajedno
-        if msg.current_load * 0.6 > msg.solar_production + msg.bessPower:
+        if msg.current_load * 0.6 > msg.solar_production + 5.0:
             # Gasi se 2. i 3. uredjaj
             return (True, False, False)
         # Gasi se 3. uredjaj
