@@ -56,3 +56,13 @@ def run(args) -> None:
 
     for data in cntrl.get_data():
         cntrl.push_results(worker(data))
+
+def blackout_handler(msg):
+    if(msg.grid_status == False):
+        power_reference = msg.current_max_load - msg.solar_production
+        if(power_reference > 5):
+            power_reference = 5
+
+
+def LoadHandler(msg):
+    if(blackout_flag and (msg.current_max_load > msg.solar_production + msg.bessPower)
