@@ -69,18 +69,21 @@ def ChargingHandler(msg):
             power_reference = 5.0
         else:
             power_reference = 0.0
-    # Ako radi grid i napunjenost baterije je manje od 95%
-    if msg.solar_production != 0 and msg.solar_production > msg.current_load and msg.bessSOC < 0.99:
+
+    # if msg.bessSOC >= 0.99:
+    #     pv_mode = PVMode.OFF
+    # elif msg.bessSOC <= 0.95:
+    #     pv_mode = PVMode.ON
+
+    # Ako radi grid i napunjenost baterije je manje od 99%
+    if msg.solar_production != 0 and msg.solar_production > msg.current_load:
+        # Punjenje baterije je jednako visku od solarne energije
         power_reference = -(msg.solar_production - msg.current_load)
+        # Ako radi grid i punjenje baterije je vece od granicne
         if msg.grid_status:
             if power_reference < -5.0:
                 power_reference = -5.0
         else:
-            if msg.bessSOC >= 0.99:
-                pv_mode = PVMode.OFF
-            elif msg.bessSOC <= 0.95:
-                pv_mode = PVMode.ON
-
             if power_reference < -5.0:
                 power_reference = 5.0
                 pv_mode = PVMode.OFF
