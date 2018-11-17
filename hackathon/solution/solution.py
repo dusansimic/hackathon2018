@@ -64,7 +64,7 @@ def ChargingHandler(msg):
     pv_mode = PVMode.ON
 
     # Ako udjemo u gap gde je struja skupa a nema svetla
-    if msg.solar_production == 0 and msg.buying_price == 8:
+    if msg.buying_price == 8:
         if msg.bessSOC > 0.25:
             power_reference = 5.0
         else:
@@ -72,7 +72,7 @@ def ChargingHandler(msg):
 
     # Ako udjemo u gap gde je struja jeftina a nema svetla
     if msg.solar_production == 0 and msg.buying_price == 3:
-        if msg.bessSOC < 0.75:
+        if msg.bessSOC < 1.0:
             power_reference = -5.0
 
     # Ako radi grid i napunjenost baterije je manje od 99%
