@@ -7,3 +7,4 @@ viz/.tern-port
 /data/profiles.json
 data/results.json
 data/results.out
+.vscode
