@@ -45,11 +45,9 @@ def ChargingHandler(msg):
     # Ako udjemo u gap gde je struja skupa a nema svetla
     if msg.buying_price == 8:
         if msg.bessSOC > 0.25:
-            usage = msg.solar_production - msg.current_load
-            if usage < 0.0:
-                power_reference = -(usage)
-            elif usage > 0.0:
-                power_reference = usage
+            power_reference = msg.solar_production - msg.current_load
+            if power_reference < 0.0:
+                power_reference = -(power_reference)
         else:
             power_reference = 0.0
 
