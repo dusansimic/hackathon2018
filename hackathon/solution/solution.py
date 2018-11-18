@@ -70,6 +70,9 @@ def ChargingHandler(msg):
             if power_reference < -5.0:
                 power_reference = 5.0
                 pv_mode = PVMode.OFF
+            if msg.bessSOC == 1:
+                power_reference = 5.0
+                pv_mode = PVMode.OFF
 
     if blackoutsCounter == 5:
         power_reference = msg.solar_production - msg.current_load
